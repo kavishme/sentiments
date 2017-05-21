@@ -1,1 +1,0 @@
-/usr/bin/c++   -g   CMakeFiles/sentiment.dir/main.cpp.o  -o sentiment -Wl,-rpath,/usr/local/lib /usr/local/lib/libboost_filesystem.so /usr/local/lib/libboost_system.so 

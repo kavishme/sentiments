@@ -1,3 +1,0 @@
-/home/simon/workspace/sentiment/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/simon/workspace/sentiment/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/simon/workspace/sentiment/cmake-build-debug/CMakeFiles/sentiment.dir
