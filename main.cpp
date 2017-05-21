@@ -173,11 +173,19 @@ int main(int argc, char *argv[]) {
         }
         auto dt = duration_cast<nanoseconds>(high_resolution_clock::now() - dt_s);
         int count = accumulate(begin(positives), end(positives), 0, plus<int>());
-        cout << endl << "Threads: " << NUM_THREADS << ",";
-        cout << endl << "Units: " << UNITS << ",";
-        cout << endl << "dt: " << dt.count() << ",";
-        cout << endl << "Positive: " << count << ",";
-        cout << endl << "Negative: " << UNITS - count << "," << endl;
+//        cout<<endl<<"Threads, Units, dt, Positives, Negatives"<<endl;
+
+//        cout << endl << "Threads: " << NUM_THREADS << ",";
+//        cout << endl << "Units: " << UNITS << ",";
+//        cout << endl << "dt: " << dt.count() << ",";
+//        cout << endl << "Positives: " << count << ",";
+//        cout << endl << "Negatives: " << UNITS - count << "," << endl;
+
+        cout << NUM_THREADS << ",";
+        cout << UNITS << ",";
+        cout << dt.count() << ",";
+        cout << count << ",";
+        cout << UNITS - count << endl;
 
     } else {
         cerr << endl
