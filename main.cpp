@@ -153,10 +153,10 @@ int main(int argc, char *argv[]) {
             bool is_positive = getSentiment(sentiments, *i);
 
             if (is_positive) {
-                cout << endl << "Positive sentiment for conversation: " << *i;
+                cerr << endl << "Positive sentiment for conversation: " << *i;
                 ++count;
             } else {
-                cout << endl << "Negative sentiment for conversation: " << *i;
+                cerr << endl << "Negative sentiment for conversation: " << *i;
             }
         }
         cout << endl << "Positive: " << count;
