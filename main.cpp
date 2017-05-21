@@ -6,8 +6,14 @@
 #include "boost/filesystem.hpp"
 #include "boost/algorithm/string.hpp"
 #include "boost/tokenizer.hpp"
+#include "omp.h"
+#include <numeric>
+#include "boost/chrono.hpp"
+
+#define NUM_THREADS 1
 
 using namespace std;
+using namespace boost::chrono;
 
 string SENTIMENT_FILE = "data/SentiWordNet_3.0.0_20130122.txt";
 string DIALOGS = "data/dialogs";
@@ -147,20 +153,31 @@ int main(int argc, char *argv[]) {
 
         // Fetch files from dialog corpus. UNIT number of files only
         auto files = getFiles();
-        uint count = 0;
-        // For each file in files process it to find sentiment
-        for (auto i = files.begin(); i != files.end(); ++i) {
-            bool is_positive = getSentiment(sentiments, *i);
+        uint positives[NUM_THREADS] = {0};
+        omp_set_num_threads(NUM_THREADS);
+        auto dt_s = high_resolution_clock::now();
 
-            if (is_positive) {
-                cerr << endl << "Positive sentiment for conversation: " << *i;
-                ++count;
-            } else {
-                cerr << endl << "Negative sentiment for conversation: " << *i;
+#pragma omp parallel
+        {// For each file in files process it to find sentiment
+            int id = omp_get_thread_num();
+            for (auto i = id; i < files.size(); i += NUM_THREADS) {
+                bool is_positive = getSentiment(sentiments, files[i]);
+
+                if (is_positive) {
+                    cerr << endl << "Positive sentiment for conversation: " << files[i];
+                    ++positives[id];
+                } else {
+                    cerr << endl << "Negative sentiment for conversation: " << files[i];
+                }
             }
         }
-        cout << endl << "Positive: " << count;
-        cout << endl << "Negative: " << UNITS - count;
+        auto dt = duration_cast<nanoseconds>(high_resolution_clock::now() - dt_s);
+        int count = accumulate(begin(positives), end(positives), 0, plus<int>());
+        cout << endl << "Threads: " << NUM_THREADS << ",";
+        cout << endl << "Units: " << UNITS << ",";
+        cout << endl << "dt: " << dt.count() << ",";
+        cout << endl << "Positive: " << count << ",";
+        cout << endl << "Negative: " << UNITS - count << "," << endl;
 
     } else {
         cerr << endl
