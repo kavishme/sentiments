@@ -1,29 +1,25 @@
-#include <iostream>
-#include <map>
-#include <fstream>
-#include <sstream>
-#include <vector>
+#include "sentiment.h"
 #include "boost/filesystem.hpp"
 #include "boost/algorithm/string.hpp"
 #include "boost/tokenizer.hpp"
 #include "omp.h"
-#include <numeric>
 #include "boost/chrono.hpp"
-
-#define NUM_THREADS 1
-
-using namespace std;
 using namespace boost::chrono;
 
+// swig -c++ -python sentiment.i
+// g++ -O3 -fopenmp -I/usr/local/include -I/usr/include/python2.7 -L/usr/local/lib -std=c++14 sentiment.cpp sentiment_wrap.cxx -o sentiment -lboost_chrono -lboost_system -lboost_filesystem -lpython2.7
+
+// g++ -O3 -fopenmp -I/usr/local/include -I/usr/include/python2.7 -std=c++14 sentiment.cpp sentiment_wrap.cxx
+// ld -shared 
 string SENTIMENT_FILE = "data/SentiWordNet_3.0.0_20130122.txt";
 string DIALOGS = "data/dialogs";
 uint UNITS = 100;
 
 vector<vector<string>> readTSV(string filepath) {
+    vector<vector<string>> tsvf;
     try {
         ifstream sf;
         sf.open(filepath);
-        vector<vector<string>> tsvf;
         uint32_t rows = 0;
         while (sf.good()) {
             string line;
@@ -45,13 +41,13 @@ vector<vector<string>> readTSV(string filepath) {
 
             tsvf.push_back(cells);
         }
-        cerr << endl << rows << " rows read from file: " << filepath;
-        return tsvf;
+        // cerr << endl << rows << " rows read from file: " << filepath;
     }
     catch (exception e) {
-        cerr << endl << "Cannot read file: " << filepath << endl << e.what();
+        // cerr << endl << "Cannot read file: " << filepath << endl << e.what();
         exit(0);
     }
+    return tsvf;
 }
 
 // breaks word string and removes #xx from word
@@ -61,7 +57,7 @@ vector<string> parseWords(string words) {
 
     stringstream ss(words);
     while (getline(ss, word, ' ')) {
-        auto hloc = word.find('#');
+        uint hloc = word.find('#');
         word = word.substr(0, hloc);
         result.push_back(word);
     }
@@ -86,17 +82,16 @@ map<string, float> getSentimentScores() {
             }
         }
         catch (exception e) {
-            cerr << endl << "Cannot process words: " << row[4] << endl << e.what();
+            // cerr << endl << "Cannot process words: " << row[4] << endl << e.what();
         }
     }
-
     return sentvalues;
 }
 
 
 vector<string> getFiles() {
+    vector<string> files;
     try {
-        vector<string> files;
         uint count = 0;
         for (boost::filesystem::recursive_directory_iterator end, dir(DIALOGS);
              dir != end; ++dir) {
@@ -107,11 +102,11 @@ vector<string> getFiles() {
                     break;
             }
         }
-        return files;
     }
     catch (exception e) {
-        cerr << endl << "Cannot read files from directory: " << DIALOGS << endl << e.what();
+        // cerr << endl << "Cannot read files from directory: " << DIALOGS << endl << e.what();
     }
+    return files;
 }
 
 bool getSentiment(const map<string, float> &sentiment, string filepath) {
@@ -138,11 +133,12 @@ bool getSentiment(const map<string, float> &sentiment, string filepath) {
         return sum >= 0;
     }
     catch (exception e) {
-        cerr << endl << "Cannot get sentiment for file: " << filepath << endl << e.what();
+        // cerr << endl << "Cannot get sentiment for file: " << filepath << endl << e.what();
     }
+    return false;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv) {
     if (argc == 4) {
         SENTIMENT_FILE = argv[1];
         DIALOGS = argv[2];
@@ -160,14 +156,14 @@ int main(int argc, char *argv[]) {
 #pragma omp parallel
         {// For each file in files process it to find sentiment
             int id = omp_get_thread_num();
-            for (auto i = id; i < files.size(); i += NUM_THREADS) {
+            for (uint i = id; i < files.size(); i += NUM_THREADS) {
                 bool is_positive = getSentiment(sentiments, files[i]);
 
                 if (is_positive) {
-                    cerr << endl << "Positive sentiment for conversation: " << files[i];
+                    // cerr << endl << "Positive sentiment for conversation: " << files[i];
                     ++positives[id];
                 } else {
-                    cerr << endl << "Negative sentiment for conversation: " << files[i];
+                    // cerr << endl << "Negative sentiment for conversation: " << files[i];
                 }
             }
         }
@@ -192,4 +188,9 @@ int main(int argc, char *argv[]) {
              << "Required three arguments, arg1:path/to/sentimentfile, arg2:path/to/data/folder, arg3: number of dialogs to process.";
     }
     return 0;
+}
+
+int run(int argc, char **argv){
+    cout<<"Threads, Units, dt, Positives, Negatives"<<endl;
+    return main(argc, argv);
 }

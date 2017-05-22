@@ -14,5 +14,5 @@
 echo "Threads, Units, dt, Positives, Negatives"
 for i in {1,10,100,1000,10000,100000,900000}
 do
-    ./cmake-build-debug/sentiment ./../data/sentiment_scores.txt ./../data/dialogs/ ${i} 2>error${i}
+    ./cmake-build-debug/sentiment ./../data/sentiment_scores.txt ./../data/dialogs/ ${i} 2>logs/error${i}
 done

@@ -1,4 +1,10 @@
 **/cmake-build-debug/*
 **/.idea/*
-error*
+**/error*
+**/build/*
 out*
+sentiment.py
+sentiment.pyc
+sentiment_wrap.cxx
+_sentiment.so
+
